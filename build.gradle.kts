@@ -1,21 +1,23 @@
 plugins {
     java
-    kotlin("jvm") version "1.3.30"
+    kotlin("jvm") version "1.3.31"
 }
-
-group = "iaa"
-version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
+fun kotlinx(module: String, version: String? = null): Any =
+    "org.jetbrains.kotlinx:kotlinx-$module${version?.let { ":$version" } ?: ""}"
+
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlinx("coroutines-core", "1.1.1"))
     compile("com.opencsv:opencsv:4.5")
 }
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
