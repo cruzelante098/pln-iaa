@@ -2,10 +2,6 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 
-// TODO: (DUDA)
-//  - Al contar las palabras del vocabulario, debemos tener en cuenta las que quitamos? Dado que el
-//    vocabulario del corpusT, por ejemplo, es más pequeño (al haber suprimido las palabras
-
 fun main() {
     val resourcesPath = "src/main/resources"
 
@@ -17,9 +13,6 @@ fun main() {
 
     val wordsT = makeTokensFromList(corpusT)
     val wordsNT = makeTokensFromList(corpusNT)
-
-    val vocabTSize = wordsT.distinct().size
-    val vocabNTSize = wordsNT.distinct().size
 
     val vocabulary = File("$resourcesPath/corpus/vocabulary.txt")
         .readLines()
@@ -35,8 +28,8 @@ fun main() {
         calculateFrequency(word, wordsNT, freqNT)
     }
 
-    writeToFile(learnT, wordsT.size, vocabTSize, freqT, vocabulary.size)
-    writeToFile(learnNT, wordsNT.size, vocabNTSize, freqNT, vocabulary.size)
+    writeToFile(learnT, wordsT.size, freqT, vocabulary.size)
+    writeToFile(learnNT, wordsNT.size, freqNT, vocabulary.size)
 
     learnT.close()
     learnNT.close()
@@ -44,27 +37,23 @@ fun main() {
 
 private fun calculateFrequency(word: String, words: List<String>, freq: HashMap<String, Int>) {
     val appearances = appearances(word, words)
-    if (appearances == 0) {
-        freq["<UNK>"] = freq.getOrDefault("<UNK>", 0) + 1
-    } else {
-        freq[word] = appearances
-    }
+    freq[word] = appearances
 }
 
 private fun writeToFile(
     learn: BufferedWriter,
     corpusSize: Int,
-    corpusVocabSize: Int,
     freq: HashMap<String, Int>,
     vocabularySize: Int
 ) {
     learn.writeln("Número de documentos del corpus:$corpusSize")
     learn.writeln("Número de palabras del corpus:${freq.size}")
+    freq["<UNK>"] = 0
     for ((word, appearances) in freq.toSortedMap(compareBy(String.CASE_INSENSITIVE_ORDER) { it })) {
-        val num = appearances + 1.0 // the first 1.0 is the laplacian smooth
-        val den = freq.size + corpusVocabSize/* + 1.0*/ // addition of <UNK>
+        val num = appearances + 1 // the first 1.0 is the laplacian smooth
+        val den = corpusSize + vocabularySize + 1.0 // addition of <UNK>
         val logprob = Math.log(num / den)
-        learn.writeln("Palabra:$word  Frec:${appearances + 1}  LogProb:$logprob")
+        learn.writeln("Palabra:$word  Frec:$num  LogProb:$logprob")
     }
 }
 
