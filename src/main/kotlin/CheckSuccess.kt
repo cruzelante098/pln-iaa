@@ -2,9 +2,9 @@ import com.github.ajalt.mordant.TermColors
 import java.io.File
 import kotlin.math.round
 
-fun main() {
-    val solution = File("$resourcesPath/random_corpus/random_corpus_solution.txt").readLines()
-    val classification = File("$resourcesPath/random_corpus/result.txt").readLines()
+fun checkSuccess(solutionPath: String, classificationPath: String) {
+    val solution = File(solutionPath).readLines()
+    val classification = File(classificationPath).readLines()
 
     if (solution.size != classification.size) {
         throw IllegalStateException("Files don't have the same amount of instances")
