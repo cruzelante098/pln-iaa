@@ -16,10 +16,9 @@ fun classify(
     for ((i, tweet) in corpus.withIndex()) {
         print("${(i + 1) * 100 / corpus.size} %\r")
 
-        val words: List<String> = makeTokens(tweet)
         // estimate the probability of the line to be troll or not troll
-        val jointProbT = jointProb(words, learnT.frequencies) + ln(probT)
-        val jointProbNT = jointProb(words, learnNT.frequencies) + ln(probNT)
+        val jointProbT = jointProb(tweet, learnT.frequencies) + ln(probT)
+        val jointProbNT = jointProb(tweet, learnNT.frequencies) + ln(probNT)
 
         // save to respective file
         if (jointProbT > jointProbNT) {
@@ -33,9 +32,10 @@ fun classify(
 }
 
 
-fun jointProb(tweet: List<String>, learn: List<Word>): Double {
+fun jointProb(tweet: String, learn: List<Word>): Double {
+    val words: List<String> = makeTokens(tweet)
     var prob = 0.0
-    for (word in tweet) {
+    for (word in words) {
         val found = learn.find { it.word == word }
         prob += found?.prob ?: learn.find { it.word == "<UNK>" }!!.prob
     }

@@ -4,19 +4,12 @@ fun processCorpus(unprocessedCorpus: List<String>): List<String> {
     val corpus = ArrayList<String>()
 
     val modifications = arrayOf(
-        Modification(
-            "Deletes URLs",
-            Regex("""((http(s)?(://))+(www\.)?([\w\-./])*(\.[a-zA-Z]{2,3}/?))[^\s\n|]*[^.,;:?!@^$ -]( - )?"""),
-            ""
-        ),
+        Modification("Deletes URLs", Regex("""((http(s)?(://))+(www\.)?([\w\-./])*(\.[a-zA-Z]{2,3}/?))[^\s\n|]*[^.,;:?!@^$ -]( - )?"""), ""),
         Modification("Deletes ASCII codes", Regex("""&#?\w+;"""), ""),
-        Modification("Deletes user mentions", Regex("""[@]('|\w)+?(\s|\b)"""), ""),
-        Modification("Deletes parenthesis", Regex("""\(([~\w])|([~\w]|[.,!?])\)"""), "$1$2"),
-        Modification(
-            "Deletes loose symbols",
-            Regex("""(?<=\s|^)([\-,.´!?'#@"*(){}\[\]:;$€%&¬/\\=º^])(?=\s|$)"""),
-            ""
-        ) // review, not workin exactly well
+        Modification("Deletes user mentions", Regex("""@('|\w)+?\s"""), " "),
+//        Modification("Deletes parenthesis", Regex("""\(([~\w])|([~\w]|[.,!?])\)"""), "$1$2"),
+        Modification("Deletes loose symbols", Regex("""(?<=\s|^)([\-,.´!?'#@"*(){}\[\]:;$€/%&¬\\=º^])(?=\s|$)"""), "")
+//        Modification("Deletes simbols around words", Regex("""\s[.,:;'"()*]?(\w+)[.,:;'"()*]?\s"""), " $1 ")
     )
 
     // transformations

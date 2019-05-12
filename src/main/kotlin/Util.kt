@@ -14,22 +14,25 @@ fun BufferedWriter.writeln(line: String) =
 
 fun makeTokens(lines: List<String>): List<String> {
     return lines
-        .flatMap { it.split("""\s+|(?<=[?!,.;:])|(?=[?!,.;:])""".toRegex()) }
-        .asSequence()
-        .map { it.replace("""[.]""".toRegex(), "") }    // remove dots
-        .map { it.replace("""^\d+$""".toRegex(), "") }  // remove words conformed of only numbers
-        .filter { it.isNotBlank() }
+        .flatMap { makeTokens(it) }
         .sorted()
         .toList()
 }
 
 fun makeTokens(lines: String): List<String> {
-    return lines.split("""\s+|(?<=[?!,.;:])|(?=[?!,.;:])""".toRegex())
+    return lines.split("""\s+|([?!,.;:()])\1*""".toRegex())
+//        .map { it.replace("""([?!,.;:])\1*""".toRegex(), "") }
         .asSequence()
-        .map { it.replace("""[.]""".toRegex(), "") }    // remove dots
-        .map { it.replace("""^\d+$""".toRegex(), "") }  // remove words conformed of only numbers
+        .map { it.replace("""\s*\d+\s*""".toRegex(), "") }
+        .map { it.replace("""(['"();.?!*:,])\1*""".toRegex(), "") }
+        .map { it.replace("""(['"();.?!*:,])(.*?)\1""".toRegex(), "$2") }
+        .map {
+            if (it.length > 1 && it[0] == it[0].toUpperCase() && it.substring(1) == it.substring(1).toLowerCase())
+                it.toLowerCase()
+            else
+                it
+        }
         .filter { it.isNotBlank() }
-        .sorted()
         .toList()
 }
 
