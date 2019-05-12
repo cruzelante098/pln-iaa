@@ -14,7 +14,9 @@ fun kotlinx(module: String, version: String? = null): Any =
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlinx("coroutines-core", "1.1.1"))
-    compile("com.opencsv:opencsv:4.5")
+    implementation("com.github.ajalt:clikt:1.7.0")
+    implementation("com.opencsv:opencsv:4.5")
+    implementation("com.github.ajalt:mordant:1.2.1")
 }
 
 java {

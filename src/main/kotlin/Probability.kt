@@ -1,6 +1,7 @@
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
+import kotlin.math.ln
 
 fun main() {
     val resourcesPath = "src/main/resources"
@@ -28,31 +29,25 @@ fun main() {
         calculateFrequency(word, wordsNT, freqNT)
     }
 
-    writeToFile(learnT, wordsT.size, freqT, vocabulary.size)
-    writeToFile(learnNT, wordsNT.size, freqNT, vocabulary.size)
+    writeToFile(learnT, corpusT.size, freqT, wordsT.size)
+    writeToFile(learnNT, corpusNT.size, freqNT, wordsNT.size)
 
     learnT.close()
     learnNT.close()
 }
 
 private fun calculateFrequency(word: String, words: List<String>, freq: HashMap<String, Int>) {
-    val appearances = appearances(word, words)
-    freq[word] = appearances
+    freq[word] = appearances(word, words)
 }
 
-private fun writeToFile(
-    learn: BufferedWriter,
-    corpusSize: Int,
-    freq: HashMap<String, Int>,
-    vocabularySize: Int
-) {
+private fun writeToFile(learn: BufferedWriter, corpusSize: Int, freq: HashMap<String, Int>, corpusWordsAmount: Int) {
     learn.writeln("Número de documentos del corpus:$corpusSize")
-    learn.writeln("Número de palabras del corpus:${freq.size}")
+    learn.writeln("Número de palabras del corpus:$corpusWordsAmount")
     freq["<UNK>"] = 0
     for ((word, appearances) in freq.toSortedMap(compareBy(String.CASE_INSENSITIVE_ORDER) { it })) {
         val num = appearances + 1 // the first 1.0 is the laplacian smooth
-        val den = corpusSize + vocabularySize + 1.0 // addition of <UNK>
-        val logprob = Math.log(num / den)
+        val den = corpusSize + freq.size + 1.0 // addition of <UNK>
+        val logprob = ln(num / den)
         learn.writeln("Palabra:$word  Frec:$num  LogProb:$logprob")
     }
 }

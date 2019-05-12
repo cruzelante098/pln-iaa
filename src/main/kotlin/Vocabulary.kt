@@ -4,24 +4,40 @@ import java.io.BufferedWriter
 import java.io.FileReader
 import java.io.FileWriter
 
-
-/* Ampliations */
-
-fun BufferedWriter.writeln(line: String) {
+fun BufferedWriter.writeln(line: String) =
     write(line + "\n")
+
+val table: TableList = TableList(2, "Descripción", "Cantidad").withSpacing(1).withUnicode(true)
+
+// counters
+var lineno = 1
+var blankLines = 0
+var validLines = 0
+
+enum class Modifications(var message: String, var amount: Int) {
+    URL("Instancias que contienen urls", 0),
+    ASCII("Instancias que contienen códigos ASCII", 0),
+    MENTION("Instancias que contienen menciones", 0),
+    PAREN("Instancias que contienen oraciones entre paréntesis", 0),
+    SYMBOL("Instancias con símbolos sueltos", 0);
 }
 
 
-data class Tweet(val content: String, val troll: Boolean)
-data class ReplaceResult(val tweet: String, val found: Int)
+// array of valid tweets
+val parsedTweets = ArrayList<String>()
+
+// route to resources from project root
+const val resourcesPath = "src/main/resources"
+
+// instance, contains tweet classified as troll or not troll
+val tweets: MutableList<Array<String>> = CSVReader(BufferedReader(FileReader("$resourcesPath/instancia/CTR_TRAIN.csv"))).readAll()
+
+
 
 fun main() {
-    val resourcesPath = "src/main/resources"
-
-    val tweets = CSVReader(BufferedReader(FileReader("$resourcesPath/instancia/CTR_TRAIN.csv"))).readAll()
-
     val troll = BufferedWriter(FileWriter("$resourcesPath/corpus/corpusT.txt"))
     val notTroll = BufferedWriter(FileWriter("$resourcesPath/corpus/corpusNT.txt"))
+
     val corpus = BufferedWriter(FileWriter("$resourcesPath/corpus/corpustodo.txt"))
 
     val instancesWithUrls = BufferedWriter(FileWriter("$resourcesPath/debug/instances_url.txt"))
@@ -30,16 +46,6 @@ fun main() {
     val instancesWithParenthesis = BufferedWriter(FileWriter("$resourcesPath/debug/instances_parenthesis.txt"))
     val instancesWithAloneSymbols = BufferedWriter(FileWriter("$resourcesPath/debug/instances_alone_symbols.txt"))
 
-    // counters
-    var lineno = 1
-    var blankLines = 0
-    var validLines = 0
-    var urlsFound = 0
-    var asciiCodesFound = 0
-    var mentionsFound = 0
-    var parenthesisFound = 0
-    var aloneSymbolsFound = 0
-
     // regex used to clean tweets
     val urlRegex = """((http(s)?(://))+(www\.)?([\w\-./])*(\.[a-zA-Z]{2,3}/?))[^\s\n|]*[^.,;:?!@^$ -]( - )?""".toRegex()
     val asciiCodeRegex = """&#?\w+;""".toRegex()
@@ -47,52 +53,18 @@ fun main() {
     val parenthesisRegex = """\(([~\w])|([~\w]|[.,!?])\)""".toRegex()
     val aloneSymbolsRegex = """(?<=\s|^)([\-,.´!?'#@"*(){}\[\]:;$€%&¬/\\=º^])(?=\s|$)""".toRegex()
 
-    // array of valid tweets
-    val parsedTweets = ArrayList<Tweet>()
-
     // transformations
     tweets.forEach {
-        // delete urls
-        with(replaceWith(it[0], urlRegex, "", instancesWithUrls)) {
-            it[0] = tweet
-            urlsFound += found
-        }
+        var tweet = it[0]
 
-        with(replaceWith(it[0], asciiCodeRegex, "", instancesWithAsciiCodes)) {
-            it[0] = tweet
-            asciiCodesFound += found
-        }
-
-        with(replaceWith(it[0], mentionRegex, "", instancesWithMentions)) {
-            it[0] = tweet
-            mentionsFound += found
-        }
-
-        with(replaceWith(it[0], parenthesisRegex, "$1$2", instancesWithParenthesis)) {
-            it[0] = tweet
-            parenthesisFound += found
-        }
-
-        with(replaceWith(it[0], aloneSymbolsRegex, "", instancesWithAloneSymbols)) {
-            it[0] = tweet
-            aloneSymbolsFound += found
-        }
+        tweet = replace(tweet, urlRegex, "", instancesWithUrls, Modifications.URL)
+        tweet = replace(tweet, asciiCodeRegex, "", instancesWithAsciiCodes, Modifications.ASCII)
+        tweet = replace(tweet, mentionRegex, "", instancesWithMentions, Modifications.MENTION)
+        tweet = replace(tweet, parenthesisRegex, "$1$2", instancesWithParenthesis, Modifications.PAREN)
+        tweet = replace(tweet, aloneSymbolsRegex, "", instancesWithAloneSymbols, Modifications.SYMBOL)
 
         // write final output to corpora
-        if (it.size == 2 && it[0].isNotBlank()) {
-            if (it[1] == "troll") {
-                troll.writeln(it[0])
-            } else {
-                notTroll.writeln(it[0])
-            }
-            corpus.writeln(it[0])
-            parsedTweets.add(Tweet(it[0], it[1] == "troll"))
-            validLines++
-        } else if (it.isNotEmpty()) {
-            blankLines++
-        } else {
-            println("[WARN] invalid line: $it")
-        }
+        writeToFile(it, tweet, troll, notTroll, corpus)
 
         lineno++
     }
@@ -114,7 +86,7 @@ fun main() {
     val vocabulary = BufferedWriter(FileWriter("src/main/resources/corpus/vocabulary.txt"))
 
     // delete unuseful characters and only leave unique words
-    val tokens = makeTokensFromList(parsedTweets.map { it.content })
+    val tokens = makeTokensFromList(parsedTweets)
 
     // write the words to the file
     vocabulary.writeln("Numero de palabras:" + tokens.size.toString())
@@ -123,36 +95,48 @@ fun main() {
     vocabulary.close()
 
     // print results
-    val table = TableList(2, "Descripción", "Cantidad").withSpacing(1).withUnicode(true)
-
     table.addRow("Líneas analizadas", "$lineno")
-    table.addRow("Líneas con URLs", "$urlsFound")
-    table.addRow("Líneas con códigos ascii", "$asciiCodesFound")
-    table.addRow("Líneas con hashtags o menciones", "$mentionsFound")
+    Modifications.values().forEach { table.addRow(it.message, it.amount.toString()) }
     table.addRow("Líneas que han quedado en blanco", "$blankLines")
-    table.addRow("Líneas con paréntesis", "$parenthesisFound")
-    table.addRow("Líneas con símbolos sueltos", "$aloneSymbolsFound")
     table.addRow("Líneas válidas para análisis", "$validLines")
     table.addRow("Palabras analizadas", "${tokens.size}")
 
     table.print()
 }
 
-private fun replaceWith(tweet: String, regex: Regex, replacement: String, output: BufferedWriter): ReplaceResult {
-    var parsedTweet: String = tweet
-    var amount = 0
-    if (regex.containsMatchIn(tweet)) {
-        output.writeln(tweet)
-        parsedTweet = tweet.replace(regex, replacement)
-        output.writeln(parsedTweet + "\n")
-        amount++
+private fun writeToFile(it: Array<String>, tweet: String, troll: BufferedWriter, notTroll: BufferedWriter, corpus: BufferedWriter) {
+    if (it.size == 2 && tweet.isNotBlank()) {
+        if (it[1] == "troll") {
+            troll.writeln(tweet)
+        } else {
+            notTroll.writeln(tweet)
+        }
+        corpus.writeln(tweet)
+        parsedTweets.add(tweet)
+        validLines++
+    } else if (it.isNotEmpty()) {
+        blankLines++
+    } else {
+        println("[WARN] invalid line: $it")
     }
-    return ReplaceResult(parsedTweet, amount)
 }
+
+
+fun replace(tweet: String, regex: Regex, replacement: String, debugFile: BufferedWriter, mod: Modifications): String {
+    var parsedTweet = tweet
+    if (regex.containsMatchIn(tweet)) {
+        debugFile.writeln(tweet)
+        parsedTweet = tweet.replace(regex, replacement)
+        debugFile.writeln(parsedTweet + "\n")
+        mod.amount++
+    }
+    return parsedTweet
+}
+
 
 private fun makeTokensFromList(lines: List<String>): List<String> {
     return lines
-        .flatMap { it.split("""\s+|(?<=[?!,.;:])|(?=[?!,.;:])""".toRegex()) }
+        .flatMap { it.split("""\s+|(?<=[?!,.;:])|(?=[?!,.;:])""".toRegex()) } // splits by dots, comma, colon, semicolon
         .asSequence()
 //        .map { it.replace("""[ !-/ :-@ \[-` {-~ ]*""".toRegex(RegexOption.COMMENTS), "") }
         .map { it.replace("""[.]""".toRegex(), "") }    // remove dots
