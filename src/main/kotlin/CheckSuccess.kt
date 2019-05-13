@@ -38,7 +38,8 @@ fun checkSuccess(solutionPath: String, classificationPath: String) {
     val misses = ((incorrectT + incorrectNT) * 100.toDouble() / solution.size).round(2)
 
     val color = when {
-        hits > 79 -> TermColors().green
+        hits > 80 -> TermColors().brightGreen
+        hits > 75 -> TermColors().cyan
         hits > 70 -> TermColors().yellow
         else -> TermColors().red
     }

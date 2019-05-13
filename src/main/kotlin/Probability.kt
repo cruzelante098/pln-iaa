@@ -3,9 +3,8 @@ import kotlin.math.ln
 fun calculateProbability(corpus: List<String>, vocabulary: List<String>): List<Word> {
     val freq = HashMap<String, Int>()
     val tokens = makeTokens(corpus).sorted()
-    val corpusVocab = tokens.distinct()
 
-    corpusVocab.forEach { word ->
+    vocabulary.forEach { word ->
         freq[word] = appearances(word, tokens)
     }
 
