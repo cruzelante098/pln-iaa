@@ -15,7 +15,7 @@ private const val pathLearnT = "$resourcesPath/aprendizaje/aprendizajeT.txt"
 private const val pathLearnNT = "$resourcesPath/aprendizaje/aprendizajeNT.txt"
 
 // Random corpus for classification
-private const val corpusID = "3"
+private const val corpusID = ""
 private const val pathRandomCorpus = "$resourcesPath/random_corpus/random_corpus$corpusID.txt"
 private const val pathRandomCorpusSolution = "$resourcesPath/random_corpus/random_corpus_solution$corpusID.txt"
 private const val pathRandomCorpusClassification = "$resourcesPath/random_corpus/result$corpusID.txt"
@@ -25,35 +25,41 @@ fun main() {
     // Corpus generation //
     ///////////////////////
 
-    // Read corpus
-    val unprocessedCorpusT = File(pathUnprocessedCorpusT).readLines()
-    val unprocessedCorpusNT = File(pathUnprocessedCorpusNT).readLines()
+//    // Read corpus
+//    val unprocessedCorpusT = File(pathUnprocessedCorpusT).readLines()
+//    val unprocessedCorpusNT = File(pathUnprocessedCorpusNT).readLines()
+//
+//    // Process corpus T and NT
+//    val corpusT = processCorpus(unprocessedCorpusT)
+//    val corpusNT = processCorpus(unprocessedCorpusNT)
+//
+//    // Generate vocab for each one
+//    val tokensT = makeTokens(corpusT)
+//    val tokensNT = makeTokens(corpusNT)
+//
+//    val vocabulary = (tokensT + tokensNT).distinct()
+//
+//    // Write parsed corpus to output
+//    createCorpusFile(pathCorpusT, corpusT)
+//    createCorpusFile(pathCorpusNT, corpusNT)
+//    createCorpusFile(pathCorpusTodo, corpusT + corpusNT)
+//    createVocabularyFile(pathVocabulary, vocabulary)
 
-    // Process corpus T and NT
-    val corpusT = processCorpus(unprocessedCorpusT)
-    val corpusNT = processCorpus(unprocessedCorpusNT)
+    ///////////////////////////////////////////
+    // Generate random corpus and learn file //
+    ///////////////////////////////////////////
 
-    // Generate vocab for each one
-    val tokensT = makeTokens(corpusT)
-    val tokensNT = makeTokens(corpusNT)
 
-    val vocabulary = (tokensT + tokensNT).distinct()
-
-    // Write parsed corpus to output
-    createCorpusFile(pathCorpusT, corpusT)
-    createCorpusFile(pathCorpusNT, corpusNT)
-    createCorpusFile(pathCorpusTodo, corpusT + corpusNT)
-    createVocabularyFile(pathVocabulary, vocabulary)
 
     /////////////////////////////
     // Calculating probability //
     /////////////////////////////
 
-//    // -------------
-//    val corpusT = readCorpusFile(pathCorpusT)
-//    val corpusNT = readCorpusFile(pathCorpusNT)
-//    val vocabulary = (makeTokens(corpusT) + makeTokens(corpusNT)).distinct()
-//    // -------------
+    // -------------
+    val corpusT = readCorpusFile(pathCorpusT)
+    val corpusNT = readCorpusFile(pathCorpusNT)
+    val vocabulary = (makeTokens(corpusT) + makeTokens(corpusNT)).distinct()
+    // -------------
 
     val probT = calculateProbability(corpusT, vocabulary)
     val probNT = calculateProbability(corpusNT, vocabulary)
