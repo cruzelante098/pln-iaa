@@ -16,13 +16,13 @@ fun checkSuccess(solutionPath: String, classificationPath: String) {
     var incorrectNT = 0
 
     for (i in 0 until solution.size) {
-        if (solution[i] == classification[i] && classification[i] == "T") {
+        if (solution[i] == classification[i] && classification[i] == Classification.TROLL.sym) {
             correctT++
-        } else if (solution[i] == classification[i] && classification[i] == "NT") {
+        } else if (solution[i] == classification[i] && classification[i] == Classification.NOT_TROLL.sym) {
             correctNT++
-        } else if (solution[i] != classification[i] && solution[i] == "NT") {
+        } else if (solution[i] != classification[i] && solution[i] == Classification.NOT_TROLL.sym) {
             incorrectNT++
-        } else if (solution[i] != classification[i] && solution[i] == "T") {
+        } else if (solution[i] != classification[i] && solution[i] == Classification.TROLL.sym) {
             incorrectT++
         } else {
             throw Error()

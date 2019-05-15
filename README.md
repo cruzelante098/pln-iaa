@@ -101,3 +101,25 @@ Una vez se ha aplicado el procedimiento en ambos corpus, se almacena la palabra,
 
 - Luego se comparan ambas probabilidades (la de ser troll o no troll) y se clasifica el tweet según cual sea mayor. Dicho resultado es escrito a un fichero en formato `T` (es troll) o `nT` (no es troll).
 
+#### Comprobación de la clasificación
+
+Probando corpus aleatorios el porcentaje de clasificación ronda el 88 por ciento.
+
+## Sobre el código
+
+El código está pensado para trabajar con ficheros ya existentes en `src/main/resources`, pero las rutas se pueden cambiar desde `src/main/kotlin/App.kt`.
+
+## Descripción de archivos
+
+Archivo de referencia: `ficheros.zip`
+
+- `aprendizajeT.txt`: fichero de aprendizaje de los trolls
+- `aprendizajeNT.txt`: fichero de aprendizaje de los no trolls
+- `clasificacion.txt`: resultado de clasificar `corpustodo`
+- `clasificaciontext.txt`: resultado de clasificar `corpustest`
+- `corpusNT.txt`: corpus de no trolls
+- `corpusT`.txt: corpus de trolls
+- `corpustest`.txt: corpus del profesor
+- `corpustodo`.txt: concatenación de `corpusT` y `corpusNT`
+
+- `vocabulary.txt`: vocabulario de `corpustodo`

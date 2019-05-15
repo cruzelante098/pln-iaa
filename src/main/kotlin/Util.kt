@@ -90,23 +90,9 @@ fun createClassificationFile(path: String, classification: List<Classification>)
     File(path).bufferedWriter().use { file ->
         classification.forEach {
             when (it) {
-                Classification.TROLL -> file.writeln("T")
-                Classification.NOT_TROLL -> file.writeln("NT")
+                Classification.TROLL -> file.writeln(Classification.TROLL.sym)
+                Classification.NOT_TROLL -> file.writeln(Classification.NOT_TROLL.sym)
             }
         }
     }
 }
-
-
-//fun makeVocabularyFromList(lines: List<String>): List<String> {
-//    return lines
-//        .flatMap { it.split("""\s+|(?<=[?!,.;:])|(?=[?!,.;:])""".toRegex()) } // splits by dots, comma, colon, semicolon
-//        .asSequence()
-////        .map { it.replace("""[ !-/ :-@ \[-` {-~ ]*""".toRegex(RegexOption.COMMENTS), "") }
-//        .map { it.replace("""[.]""".toRegex(), "") }    // remove dots
-//        .map { it.replace("""^\d+$""".toRegex(), "") }  // remove words conformed of only numbers
-//        .filter { it.isNotBlank() }
-//        .distinct()
-//        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it })
-//        .toList()
-//}
